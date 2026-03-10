@@ -65,8 +65,8 @@ class OrganizationsService {
     try {
       await sendVerificationEmail(user.email, org.name, verificationToken);
     } catch (err) {
-      logger.error('Failed to send verification email', err);
-      // don't throw — user can request resend
+      logger.error('Failed to send verification email during registration', err);
+      throw { status: 500, message: 'Failed to send verification email. Please try again.' };
     }
 
     return {

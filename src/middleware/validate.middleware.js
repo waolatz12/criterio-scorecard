@@ -10,12 +10,17 @@ function validate(schema) {
 
     if (!result.success) {
       // build a clean errors object
-      const errors = result.error.errors.map(e => ({
-        field: e.path.join('.'),
-        message: e.message,
+      const issues = result.error?.issues || result.error?.errors || [];
+      const errors = issues.map(e => ({
+        field: Array.isArray(e.path) ? e.path.join('.') : String(e.path || ''),
+        message: e.message || 'Validation error',
       }));
-      
-      res.status(400).json({ errors });
+
+      if (errors.length === 0) {
+        errors.push({ field: '', message: 'Validation error' });
+      }
+
+      return res.status(400).json({ errors });
     } else {
       next();
     }
@@ -23,3 +28,4 @@ function validate(schema) {
 }
 
 module.exports = { validate };
+

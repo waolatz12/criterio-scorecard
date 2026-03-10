@@ -11,7 +11,7 @@ const {
   getImportBatches,
   getImportBatch
 } = require('../controllers/suppliers.controller');
-const { authMiddleware } = require('../middleware/auth.middleware');
+const { authenticate } = require('../middleware/auth.middleware');
 const { validate } = require('../middleware/validate.middleware');
 
 // Configure multer for CSV uploads
@@ -28,7 +28,7 @@ const upload = multer({
 });
 
 // Apply auth middleware to all routes
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Supplier CRUD routes
 router.get('/', listSuppliers);

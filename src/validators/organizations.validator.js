@@ -11,6 +11,7 @@ const organizationSignupSchema = z.object({
   }),
 });
 
+//bb
 const kpiConfigSchema = z.object({
   body: z.object({
     template_name: z.string().min(2, 'Template name required').nonempty(),

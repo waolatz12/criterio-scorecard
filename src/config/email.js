@@ -5,9 +5,13 @@ let transporter;
 
 // Initialize email transporter based on config
 function initializeEmailService() {
-  const provider = process.env.EMAIL_PROVIDER || 'mailtrap'; // 'mailtrap' or 'smtp'
+  const provider = process.env.EMAIL_PROVIDER || 'smtp'; // default to 'smtp'
 
   if (provider === 'mailtrap') {
+    if (!process.env.MAILTRAP_HOST || !process.env.MAILTRAP_USER || !process.env.MAILTRAP_PASS) {
+      logger.error('Mailtrap configuration incomplete. Missing MAILTRAP_HOST, MAILTRAP_USER, or MAILTRAP_PASS');
+      return;
+    }
     transporter = nodemailer.createTransport({
       host: process.env.MAILTRAP_HOST,
       port: process.env.MAILTRAP_PORT || 2525,
@@ -16,7 +20,12 @@ function initializeEmailService() {
         pass: process.env.MAILTRAP_PASS,
       },
     });
+    logger.info('Email service initialized with Mailtrap provider');
   } else if (provider === 'smtp') {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      logger.error('SMTP configuration incomplete. Missing SMTP_HOST, SMTP_USER, or SMTP_PASS');
+      return;
+    }
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT || 587,
@@ -26,8 +35,9 @@ function initializeEmailService() {
         pass: process.env.SMTP_PASS,
       },
     });
+    logger.info(`Email service initialized with SMTP provider (${process.env.SMTP_HOST}:${process.env.SMTP_PORT})`);
   } else {
-    logger.warn('Email service not configured. Emails will not be sent.');
+    logger.error(`Unknown email provider: ${provider}. Supported values: 'mailtrap', 'smtp'`);
   }
 }
 
