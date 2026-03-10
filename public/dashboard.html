@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Supplier Scorecard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      background: #007bff;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+    }
+    .logout-btn {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(255,255,255,0.2);
+      color: white;
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .logout-btn:hover {
+      background-color: rgba(255,255,255,0.3);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .welcome {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
+    .button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    .button:hover {
+      background-color: #0056b3;
+    }
+    .user-info {
+      background: #e9ecef;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Supplier Scorecard Dashboard</h1>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+    <div class="welcome">
+      <h2>Welcome to Your Supplier Evaluation Platform</h2>
+      <div class="user-info" id="userInfo">
+        Loading user information...
+      </div>
+      <p>Your isolated evaluation environment is now ready. You can start configuring KPI templates and managing your supplier relationships.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>KPI Configuration</h3>
+        <p>Set up scoring templates for different supplier types and industries.</p>
+        <button class="button" onclick="configureKPIs()">Configure KPIs</button>
+      </div>
+
+      <div class="card">
+        <h3>Supplier Management</h3>
+        <p>Add and manage your supplier database with performance tracking.</p>
+        <button class="button" onclick="manageSuppliers()">Manage Suppliers</button>
+      </div>
+
+      <div class="card">
+        <h3>Scorecards</h3>
+        <p>View and generate supplier performance scorecards.</p>
+        <button class="button" onclick="viewScorecards()">View Scorecards</button>
+      </div>
+
+      <div class="card">
+        <h3>Analytics</h3>
+        <p>Analyze supplier performance trends and insights.</p>
+        <button class="button" onclick="viewAnalytics()">View Analytics</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get token and user from URL parameters (from OAuth callback)
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userJson = urlParams.get('user');
+
+    let currentUser = null;
+    let authToken = localStorage.getItem('authToken') || token;
+
+    if (authToken) {
+      localStorage.setItem('authToken', authToken);
+    }
+
+    if (userJson) {
+      try {
+        currentUser = JSON.parse(decodeURIComponent(userJson));
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      } catch (e) {
+        console.error('Failed to parse user data');
+      }
+    } else {
+      // Try to get from localStorage
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        currentUser = JSON.parse(storedUser);
+      }
+    }
+
+    // Display user info
+    if (currentUser) {
+      document.getElementById('userInfo').innerHTML = `
+        <strong>User:</strong> ${currentUser.full_name} (${currentUser.email})<br>
+        <strong>Role:</strong> ${currentUser.role}<br>
+        <strong>Organization ID:</strong> ${currentUser.organization_id}
+      `;
+    } else {
+      document.getElementById('userInfo').innerHTML = `
+        <div style="color: #dc3545;">No user information found. Please log in.</div>
+        <a href="/login" class="button">Login</a>
+      `;
+    }
+
+    // Placeholder functions for dashboard actions
+    function configureKPIs() {
+      alert('KPI Configuration - Feature coming soon!');
+      // In a real app, this would navigate to KPI config page
+    }
+
+    function manageSuppliers() {
+      alert('Supplier Management - Feature coming soon!');
+      // In a real app, this would navigate to supplier management page
+    }
+
+    function viewScorecards() {
+      alert('Scorecards - Feature coming soon!');
+      // In a real app, this would navigate to scorecards page
+    }
+
+    function viewAnalytics() {
+      alert('Analytics - Feature coming soon!');
+      // In a real app, this would navigate to analytics page
+    }
+
+    // Clean up URL parameters after processing
+    if (token || userJson) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    function logout() {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      window.location.href = '/login.html';
+    }
+  </script>
+</body>
+</html>

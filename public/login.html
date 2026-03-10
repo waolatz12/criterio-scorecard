@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Supplier Scorecard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 1rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin: 1rem 0;
+    }
+    .button:hover {
+      background-color: #0056b3;
+    }
+    .button.google {
+      background-color: #dc3545;
+    }
+    .button.google:hover {
+      background-color: #c82333;
+    }
+    .link {
+      color: #007bff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+    .error {
+      color: #dc3545;
+      margin-top: 1rem;
+      font-size: 14px;
+    }
+    .success {
+      color: #28a745;
+      margin-top: 1rem;
+      font-size: 14px;
+    }
+    .loading {
+      display: none;
+      color: #007bff;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Supplier Scorecard</div>
+    <h2>Sign In</h2>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+      </div>
+
+      <button type="submit" class="button">Sign In</button>
+    </form>
+
+    <button class="button google" onclick="loginWithGoogle()">Sign in with Google</button>
+
+    <p>
+      <a href="/register.html" class="link">Don't have an account? Register</a>
+    </p>
+
+    <div id="message"></div>
+    <div class="loading" id="loading">Signing in...</div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('message').innerHTML = '';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store token and user info
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('currentUser', JSON.stringify(data.user));
+
+          document.getElementById('message').innerHTML = '<div class="success">✓ Login successful! Redirecting...</div>';
+
+          // Redirect to dashboard
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 1000);
+        } else {
+          document.getElementById('message').innerHTML = `<div class="error">✗ ${data.message || 'Login failed'}</div>`;
+        }
+      } catch (error) {
+        document.getElementById('message').innerHTML = '<div class="error">✗ Network error. Please try again.</div>';
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    });
+
+    function loginWithGoogle() {
+      window.location.href = '/api/auth/google';
+    }
+  </script>
+</body>
+</html>

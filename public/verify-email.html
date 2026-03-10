@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification - Supplier Scorecard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 1rem;
+    }
+    .message {
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      text-decoration: none;
+      display: inline-block;
+      margin: 0.5rem;
+    }
+    .button:hover {
+      background-color: #0056b3;
+    }
+    .button.secondary {
+      background-color: #6c757d;
+    }
+    .button.secondary:hover {
+      background-color: #545b62;
+    }
+    .error {
+      color: #dc3545;
+      margin-top: 1rem;
+    }
+    .success {
+      color: #28a745;
+      margin-top: 1rem;
+    }
+    .loading {
+      display: none;
+      color: #007bff;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Supplier Scorecard</div>
+    <div id="content">
+      <h2>Verify Your Email</h2>
+      <p class="message">Click the button below to verify your email address and complete your registration.</p>
+      <button class="button" onclick="verifyEmail()">Verify Email</button>
+      <br>
+      <a href="#" class="button secondary" onclick="resendEmail()">Resend Email</a>
+    </div>
+    <div class="loading" id="loading">Verifying...</div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // Get token from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (!token) {
+      document.getElementById('content').innerHTML = `
+        <h2>Invalid Link</h2>
+        <p class="message">This verification link is invalid or expired.</p>
+        <a href="/login" class="button">Go to Login</a>
+      `;
+    }
+
+    async function verifyEmail() {
+      if (!token) return;
+
+      document.getElementById('loading').style.display = 'block';
+      document.querySelector('.button').disabled = true;
+
+      try {
+        const response = await fetch('/api/auth/verify-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById('content').innerHTML = `
+            <h2>Email Verified!</h2>
+            <p class="message">Your email has been successfully verified. You can now access your account.</p>
+            <a href="/dashboard.html" class="button">Go to Dashboard</a>
+          `;
+          document.getElementById('result').innerHTML = '<div class="success">✓ Email verified successfully</div>';
+        } else {
+          document.getElementById('result').innerHTML = `<div class="error">✗ ${data.message || 'Verification failed'}</div>`;
+        }
+      } catch (error) {
+        document.getElementById('result').innerHTML = '<div class="error">✗ Network error. Please try again.</div>';
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+        document.querySelector('.button').disabled = false;
+      }
+    }
+
+    async function resendEmail() {
+      // This would need the user's email, which we don't have in this context
+      // In a real app, you'd redirect to a resend page or store email in session
+      alert('Please contact support to resend verification email.');
+    }
+
+    // Auto-verify if token is present
+    if (token) {
+      verifyEmail();
+    }
+  </script>
+</body>
+</html>
