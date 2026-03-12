@@ -66,7 +66,11 @@ class OrganizationsService {
       await sendVerificationEmail(user.email, org.name, verificationToken);
     } catch (err) {
       logger.error('Failed to send verification email during registration', err);
-      throw { status: 500, message: 'Failed to send verification email. Please try again.' };
+      const reason = err && (err.response || err.message || err.code);
+      const message = config.nodeEnv === 'development' && reason
+        ? `Failed to send verification email. ${reason}`
+        : 'Failed to send verification email. Please try again.';
+      throw { status: 500, message };
     }
 
     return {
@@ -135,3 +139,4 @@ class OrganizationsService {
 }
 
 module.exports = new OrganizationsService();
+

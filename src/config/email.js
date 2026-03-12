@@ -26,21 +26,34 @@ function initializeEmailService() {
       logger.error('SMTP configuration incomplete. Missing SMTP_HOST, SMTP_USER, or SMTP_PASS');
       return;
     }
+    const smtpPort = Number(process.env.SMTP_PORT) || 587;
+    const smtpSecure = typeof process.env.SMTP_SECURE === 'string'
+      ? ['true', '1', 'yes'].includes(process.env.SMTP_SECURE.toLowerCase())
+      : smtpPort === 465;
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT || 587,
-      secure: process.env.SMTP_SECURE === 'true',
+      port: smtpPort,
+      secure: smtpSecure,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
-    logger.info(`Email service initialized with SMTP provider (${process.env.SMTP_HOST}:${process.env.SMTP_PORT})`);
+    logger.info(`Email service initialized with SMTP provider (${process.env.SMTP_HOST}:${smtpPort})`);
   } else {
     logger.error(`Unknown email provider: ${provider}. Supported values: 'mailtrap', 'smtp'`);
   }
 }
 
+function getFromAddress() {
+  return (
+    process.env.EMAIL_FROM ||
+    process.env.SMTP_FROM ||
+    process.env.MAILTRAP_FROM ||
+    process.env.SMTP_USER ||
+    'noreply@supplierscorecard.com'
+  );
+}
 function getVerificationEmailHTML(verificationLink, organizationName) {
   return `
     <!DOCTYPE html>
@@ -91,9 +104,11 @@ async function sendVerificationEmail(email, organizationName, verificationToken)
   const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email.html?token=${verificationToken}`;
   const htmlContent = getVerificationEmailHTML(verificationLink, organizationName);
 
+  const fromAddress = getFromAddress();
+
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'noreply@supplier-scorecard.com',
+      from: fromAddress,
       to: email,
       subject: 'Verify Your Email - Supplier Scorecard',
       html: htmlContent,
@@ -111,9 +126,11 @@ async function sendPasswordResetEmail(email, resetLink) {
     return;
   }
 
+  const fromAddress = getFromAddress();
+
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'noreply@supplier-scorecard.com',
+      from: fromAddress,
       to: email,
       subject: 'Reset Your Password - Supplier Scorecard',
       html: `
@@ -134,3 +151,7 @@ module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
 };
+
+
+
+
